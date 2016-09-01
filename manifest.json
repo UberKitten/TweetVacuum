@@ -7,7 +7,8 @@
 	"persistent": false
   },
   "page_action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+	"default_title": "Only active on Twitter search page"
   },
   "icons": { "16": "logo_16.png",
            "48": "logo_48.png",
