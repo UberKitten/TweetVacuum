@@ -6,12 +6,24 @@
       body {
         font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive;
         font-size: 100%;
+		min-width: 500px;
       }
+	  
+	  #yesparse, #stop {
+		display: none;
+	  }
     </style>
 	<script src="popup.js"></script>
   </head>
   <body>
-    <div>Information here</div>
-	<div><a href="#" id="start">Start</a>
+	<div id="noparse">
+		Can't seem to parse your query. Are you searching for tweets?
+	</div>
+	<div id="yesparse">
+		<strong>Query:</strong> <span id="searchquery"></span></h2><br />
+		<strong>Current data count:</strong> <span id="datacount"></span><br />
+		<button id="start">Start</button>
+		<button id="stop">Stop</button>
+	</div>
   </body>
 </html>
