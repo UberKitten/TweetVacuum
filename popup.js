@@ -28,7 +28,7 @@ function start(e) {
 	});
 	
 	until = meta.latestDate;
-	log("Latest date: " + until);
+	log("Latest date: " + isoDate(until));
 	loop();
 }
 
@@ -48,13 +48,15 @@ function loop() {
 			log("Injecting script")
 			chrome.tabs.executeScript(tab.id, {
 				file: "jquery-3.1.0.js"
-			});
-			chrome.tabs.executeScript(tab.id, {
-				file: "dexie.js"
-			});
-			chrome.tabs.executeScript(tab.id, {
-				file: "inject.js",
-				runAt: "document_end"
+			}, function() {				
+				chrome.tabs.executeScript(tab.id, {
+					file: "dexie.js"
+				}, function() {		
+					chrome.tabs.executeScript(tab.id, {
+						file: "inject.js",
+						runAt: "document_end"
+					})
+				})
 			});
 		});
 	}
