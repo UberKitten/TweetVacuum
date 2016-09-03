@@ -1,61 +1,76 @@
-var query, url;
+var username, db;
+var until;
+var waiting = false;
 
-// http://stackoverflow.com/a/901144
-function getParameterByName(name, url) {
-    //if (!url) url = window.location.href;
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-        results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
+function log(msg) {
+	$("#endlog").append(msg).append("<br/>");
+	console.log(msg);
 }
 
-function load() {
-	chrome.tabs.query({lastFocusedWindow: true, windowType: "normal", currentWindow: true}, function (tabs) {
-		url = tabs[0].url;
-		query = getParameterByName("q", url);
-		document.getElementById("searchquery").textContent = '"' + query + '"';
-		if (query) {
-			document.getElementById("yesparse").style.display = 'block';
-			document.getElementById("noparse").style.display = 'none';
-		} else {
-			document.getElementById("noparse").style.display = 'block';
-			document.getElementById("yesparse").style.display = 'none';
-		}
+function isoDate(date) {
+	return date.getUTCFullYear() + "-" + (date.getUTCMonth() + 1) + "-" + date.getUTCDate();
+}
+
+function start(e) {	
+	username = $("#username").val().toLowerCase();
+	log("Running for user: " + username);
+	
+	db = new Dexie(username);
+	db.version(1).stores({
+		meta: 'latestDate',
+		tweet: '&id'
+	});
+	db.open();
+	
+	var meta = {latestDate: new Date()};
+	db.meta.toArray().then(function(metaobj) {
+		meta = metaobj;
+	});
+	
+	until = meta.latestDate;
+	log("Latest date: " + until);
+	loop();
+}
+
+function loop() {
+	if (!waiting) {
+		var since = new Date(until.getTime());
+		since.setMonth(since.getMonth() - 1);
 		
-		chrome.storage.local.get(query, function(items) {
-			if (items.length > 0) {
-				document.getElementById("datacount").textContent = items[0].length;
-			} else {
-				document.getElementById("datacount").textContent = '0';
-			}
+		log("Going from " + isoDate(since) + " to " + isoDate(until));
+		
+		var query = "from:" + username + " since:" + isoDate(since) + " until:" + isoDate(until);
+		var url = "https://twitter.com/search?f=tweets&q=" + encodeURIComponent(query);
+		log("Searching: " + query);
+
+		waiting = true;
+		chrome.tabs.create({url: url}, function(tab) {
+			log("Injecting script")
+			chrome.tabs.executeScript(tab.id, {
+				file: "jquery-3.1.0.js"
+			});
+			chrome.tabs.executeScript(tab.id, {
+				file: "dexie.js"
+			});
+			chrome.tabs.executeScript(tab.id, {
+				file: "inject.js",
+				runAt: "document_end"
+			});
 		});
-	});
-}
-
-
-function start(e) {
-	// Initialize Chrome data
+	}
 	
-	
-	chrome.tabs.executeScript({
-		file: "jquery-3.1.0.js"
-	});
-	chrome.tabs.executeScript({
-		file: "inject.js",
-		runAt: "document_end"
-	});
+	setTimeout(loop, 1000);
 }
 
 function stop(e) {
 	// elegant in its brute simplicity
-	chrome.tabs.reload();
+	location.reload(true);
 }
 
-
-document.addEventListener('DOMContentLoaded', function () {
-	document.getElementById("start").addEventListener('click', start);
-	document.getElementById("stop").addEventListener('click', stop);
-	load();
+$(document).ready(function() {
+	$("#start").click(start);
+	$("#stop").click(stop);
+	$('#form').submit(function () {
+		return false;
+	});	
 });
