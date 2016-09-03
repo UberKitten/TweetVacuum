@@ -1,16 +1,5 @@
-chrome.runtime.onInstalled.addListener(function(details) {
-  chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
-    chrome.declarativeContent.onPageChanged.addRules([ {
-        conditions: [
-          new chrome.declarativeContent.PageStateMatcher({
-            pageUrl: {
-				hostEquals: 'twitter.com',
-				pathPrefix: '/search'
-			},
-          })
-        ],
-        actions: [ new chrome.declarativeContent.ShowPageAction() ]
-      }
-    ]);
-  });
+chrome.browserAction.onClicked.addListener(function(activeTab)
+{
+    var newURL = chrome.extension.getURL("popup.html");
+    chrome.tabs.create({ url: newURL });
 });

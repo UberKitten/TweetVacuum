@@ -6,19 +6,18 @@
     "scripts": ["background.js"],
 	"persistent": false
   },
-  "page_action": {
-    "default_popup": "popup.html",
-	"default_title": "Only active on Twitter search page"
+  "browser_action": {
+	"default_title": "Tweets, man"
   },
   "icons": { "16": "logo_16.png",
            "48": "logo_48.png",
           "128": "logo_128.png" },
   "permissions": [
 	"declarativeContent",
-	"activeTab",
 	"tabs",
 	"storage",
-	"unlimitedStorage"
+	"unlimitedStorage",
+	"https://twitter.com/"
   ],
   "manifest_version": 2
 }
