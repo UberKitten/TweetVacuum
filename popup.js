@@ -1,5 +1,6 @@
 var username, db;
 var until;
+var windowId, tabId;
 var waiting = false;
 
 function log(msg) {
@@ -7,20 +8,10 @@ function log(msg) {
 	console.log(msg);
 }
 
-function isoDate(date) {
-	return date.getUTCFullYear() + "-" + (date.getUTCMonth() + 1) + "-" + date.getUTCDate();
-}
-
 function start(e) {	
 	username = $("#username").val().toLowerCase();
 	log("Running for user: " + username);
-	
-	db = new Dexie(username);
-	db.version(1).stores({
-		meta: 'latestDate',
-		tweet: '&id'
-	});
-	db.open();
+	db = createDb(username)
 	
 	var meta = {latestDate: new Date()};
 	db.meta.toArray().then(function(metaobj) {
@@ -29,7 +20,13 @@ function start(e) {
 	
 	until = meta.latestDate;
 	log("Latest date: " + isoDate(until));
-	loop();
+	log("Opening new work window");
+	chrome.windows.create({
+		url: "about:blank",
+	}, function(newwindow) {
+		windowId = newwindow.id;
+		loop();
+	});
 }
 
 function loop() {
@@ -44,20 +41,26 @@ function loop() {
 		log("Searching: " + query);
 
 		waiting = true;
-		chrome.tabs.create({url: url}, function(tab) {
+		chrome.tabs.create({
+			url: url,
+			windowId: windowId
+		}, function(tab) {
+			tabId = tab.id;
 			log("Injecting script")
-			chrome.tabs.executeScript(tab.id, {
-				file: "jquery-3.1.0.js"
-			}, function() {				
-				chrome.tabs.executeScript(tab.id, {
-					file: "dexie.js"
-				}, function() {		
-					chrome.tabs.executeScript(tab.id, {
-						file: "inject.js",
-						runAt: "document_end"
-					})
-				})
-			});
+			executeScripts(tabId, [
+				{ file: "jquery-3.1.0.js" },
+				{ file: "dexie.js" },
+				{ file: "common.js" },
+				{ file: "inject.js"}
+			]);
+			
+			// Give it a few seconds to load all the scripts and be ready
+			setTimeout(function() {
+				chrome.tabs.sendMessage(tabId, {
+					action: "start",
+					username: username
+				});
+			}, 5000);
 		});
 	}
 	
@@ -65,8 +68,9 @@ function loop() {
 }
 
 function stop(e) {
-	// elegant in its brute simplicity
-	location.reload(true);
+	chrome.tabs.sendMessage(tabId, {
+		action: "stop"
+	});
 }
 
 $(document).ready(function() {

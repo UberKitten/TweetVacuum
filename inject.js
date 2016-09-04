@@ -1,49 +1,56 @@
 $(".topbar").remove();
 $("#page-container").css("paddingTop", "0px");
 $(".AdaptiveFiltersBar").remove();
-//$(".SidebarCommonModules").parent().remove();
+$(".SidebarCommonModules").parent().remove();
+// We need this so that we can scroll to the bottom and trigger Twitter's infinite scroll code
+$("#page-container").append($("<div>", {
+	style: "height: 10000px; width: 1px;"
+}));
 
-// http://stackoverflow.com/a/901144
-function getParameterByName(name, url) {
-    if (!url) url = window.location.href;
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-        results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
+var db;
+
+function run(username) {
+	db = createDb(username);
+	setTimeout(loop, 1000);
+	setInterval(scroll, 500);
 }
 
-var query = getParameterByName("q");
-var data = null;
-
-chrome.storage.local.get(query, function(items) {
-	if (items.length > 0) {
-		data = items[0];
-	} else {
-		data = [];
-	}
-	
-	setTimeout(run, 2000);
-});
-
-function run() {
+function loop() {
 	var items = $(".js-stream-item").not("[vacuumed=true]");
 	
 	items.each(function() {
 		var item = $(this);
-		data[item.attr("data-item-id")] = true;
+		db.tweet.put({id: item.attr("data-item-id")}).catch(function (error) {
+			log(error);
+		});
 		item.attr("vacuumed", true);
 		console.log(item.attr("data-item-id"));
 		item.hide();
 	});
 	
-	//chrome.storage.local.set({query: data});
-	
-	window.scrollTo(0,0);
-	window.scrollTo(0, document.body.scrollHeight);
-	setTimeout(run, 250);
-};
+	setTimeout(loop, 1000);
+}
 
-/*setInterval(function() {
-}, 1000);*/
+var up;
+function scroll() {
+	if (up) {
+		window.scrollTo(0,0);
+	} else {
+		window.scrollTo(0, document.body.scrollHeight);
+	}
+	up = !up;
+}
+
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log(sender.tab ?
+                "from a content script:" + sender.tab.url :
+                "from the extension");
+    if (request.action == "stop") {
+		db.close();
+		window.close();
+	}
+	if (request.action == "start") {
+		run(request.username);
+	}
+  });
