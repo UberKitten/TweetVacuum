@@ -91,10 +91,10 @@ function stop(e) {
 	$("#stop").hide();
 	
 	log("Stopping");
-	clearTimeout(timeout);
 	chrome.tabs.sendMessage(tabId, {
 		action: "stop"
 	});
+	clearTimeout(timeout);
 	tabId = "";
 	windowId = "";
 }
