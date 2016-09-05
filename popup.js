@@ -1,6 +1,6 @@
 var username, db;
 var windowId, tabId;
-var timeout;
+var timeout, count;
 
 function start(e) {	
 	$("#start").hide();
@@ -53,6 +53,10 @@ function launchSearch(lastDate) {
 			inject(newwindow.tabs[0]);
 		});
 	}
+	
+	var endlog = $("#endlog");
+	endlog.append("Current count: ").append("<span class='count'>0</span>").append("<br/>");
+	count = 0;
 }
 
 function inject(tab) {
@@ -75,6 +79,9 @@ chrome.runtime.onMessage.addListener(
 			clearTimeout(timeout);
 			timeout = setTimeout(searchFailure, 10000);
 			
+			count++;
+			$(".count").last().text(count);
+
 			db.tweet.add(request.data).catch(function (error) {
 				console.log(error);
 			});
