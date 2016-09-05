@@ -3,8 +3,8 @@
 function createDb(username) {
 	db = new Dexie(username);
 	db.version(1).stores({
-		meta: 'latestDate',
-		tweet: '&id'
+		meta: 'id, latestDate',
+		tweet: '++id, &tweetId, date'
 	});
 	db.open();
 	return db;

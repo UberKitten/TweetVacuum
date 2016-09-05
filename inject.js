@@ -20,11 +20,15 @@ function loop() {
 	
 	items.each(function() {
 		var item = $(this);
-		db.tweet.put({id: item.attr("data-item-id")}).catch(function (error) {
+		var date = new Date(item.find(".js-short-timestamp").attr("data-time")); // Unix epoch time
+		
+		db.tweet.put({
+			tweetId: item.attr("data-item-id"),
+			date: date
+		}).catch(function (error) {
 			log(error);
 		});
 		item.attr("vacuumed", true);
-		console.log(item.attr("data-item-id"));
 		item.hide();
 	});
 	
