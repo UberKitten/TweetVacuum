@@ -12,8 +12,11 @@ function start(e) {
 		.limit(1)
 		.toArray()
 		.then(function(tweet) {
-			if (tweet && tweet.date) {
-				launchSearch(new Date(tweet.date));
+			if (tweet[0]) {
+				var date = new Date(tweet[0].date);
+				log("Found existing data, latest date " + isoDate(date));
+				date.setDate(date.getDate() + 1)
+				launchSearch(date);
 			} else {
 				var date = new Date();
 				date.setDate(date.getDate() + 1)
