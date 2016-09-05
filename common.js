@@ -44,9 +44,6 @@ function executeScripts(tabId, injectDetailsArray)
 
 function log(msg) {
 	var endlog = $("#endlog");
-	if (endlog)
-	{
-		endlog.append(msg).append("<br/>");
-	}
+	endlog.append(msg).append("<br/>");
 	console.log(msg);
 }
