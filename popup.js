@@ -1,8 +1,10 @@
 var username, db;
 var windowId, tabId;
-var waiting = false;
 
 function start(e) {	
+	$("#start").hide();
+	$("#stop").show();
+
 	username = $("#username").val().toLowerCase();
 	log("Running for user: " + username);
 	db = createDb(username);
@@ -27,13 +29,10 @@ function start(e) {
 }
 
 function launchSearch(lastDate) {
-	log("Searching up to " + isoDate(lastDate));
+	log("Searching for tweets before " + isoDate(lastDate));
 	
 	var query = "from:" + username + " until:" + isoDate(lastDate);
 	var url = "https://twitter.com/search?f=tweets&q=" + encodeURIComponent(query);
-	log("Searching: " + query);
-
-	waiting = true;
 	
 	if (windowId) {
 		chrome.tabs.create({
@@ -72,16 +71,21 @@ function inject(id) {
 }
 
 chrome.runtime.onMessage.addListener(
-function(request, sender, sendResponse) {
-	db.tweet.add(request).catch(function (error) {
-		log(error);
-	});
+	function(request, sender, sendResponse) {
+		db.tweet.add(request).catch(function (error) {
+			log(error);
+		});
 });
 
 function stop(e) {
+	$("#start").show();
+	$("#stop").hide();
+	log("Stopping");
 	chrome.tabs.sendMessage(tabId, {
 		action: "stop"
 	});
+	tabId = "";
+	windowId = "";
 }
 
 function deleteDb() {
