@@ -73,9 +73,16 @@ function stop(e) {
 	});
 }
 
+function deleteDb() {
+	username = $("#username").val().toLowerCase();
+	Dexie.delete(username);
+	log("Database deleted for " + username);
+}
+
 $(document).ready(function() {
 	$("#start").click(start);
 	$("#stop").click(stop);
+	$("#delete").click(deleteDb);
 	$('#form').submit(function () {
 		return false;
 	});	
