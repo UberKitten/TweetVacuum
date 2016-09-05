@@ -16,20 +16,17 @@ function run(username) {
 }
 
 function loop() {
-	var items = $(".js-stream-item").not("[vacuumed=true]");
-	
-	items.each(function() {
-		var item = $(this);
-		var date = new Date(item.find(".js-short-timestamp").attr("data-time")); // Unix epoch time
-		
-		db.tweet.put({
-			tweetId: item.attr("data-item-id"),
-			date: date
-		}).catch(function (error) {
-			log(error);
-		});
-		item.attr("vacuumed", true);
-		item.hide();
+	items = $(".js-stream-item")
+		.not("[vacuumed=true]")
+		.each(function() {
+			var item = $(this);
+			
+			chrome.runtime.sendMessage({
+				tweetId: item.attr("data-item-id"),
+				date: parseInt(item.find(".js-short-timestamp").attr("data-time-ms"))
+			});
+			item.attr("vacuumed", true);
+			item.hide();
 	});
 	
 	setTimeout(loop, 1000);

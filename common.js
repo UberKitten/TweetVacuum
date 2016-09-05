@@ -3,8 +3,7 @@
 function createDb(username) {
 	db = new Dexie(username);
 	db.version(1).stores({
-		meta: 'id, latestDate',
-		tweet: '++id, &tweetId, date'
+		tweet: 'tweetId, date'
 	});
 	db.open();
 	return db;
@@ -41,4 +40,13 @@ function executeScripts(tabId, injectDetailsArray)
 
     if (callback !== null)
         callback();   // execute outermost function
+}
+
+function log(msg) {
+	var endlog = $("#endlog");
+	if (endlog)
+	{
+		endlog.append(msg).append("<br/>");
+	}
+	console.log(msg);
 }
