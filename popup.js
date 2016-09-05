@@ -1,5 +1,6 @@
 var username, db;
 var windowId, tabId;
+var timeout;
 
 function start(e) {	
 	$("#start").hide();
@@ -8,7 +9,11 @@ function start(e) {
 	username = $("#username").val().toLowerCase();
 	log("Running for user: " + username);
 	db = createDb(username);
-	
+
+	newSearch();
+}
+
+function newSearch() {
 	db.tweet
 		.orderBy("date")
 		.limit(1)
@@ -45,42 +50,48 @@ function launchSearch(lastDate) {
 			url: url,
 		}, function(newwindow) {
 			windowId = newwindow.id;
-			inject(newwindow.tabs[0].id);
+			inject(newwindow.tabs[0]);
 		});
 	}
 }
 
-function inject(id) {
-	tabId = id;
+function inject(tab) {
+	if (tabId) {
+		chrome.tabs.remove(tabId);
+	}
+	tabId = tab.id;
 	
 	executeScripts(tabId, [
 		{ file: "jquery-3.1.0.js" },
-		{ file: "dexie.js" },
-		{ file: "common.js" },
 		{ file: "inject.js"}
 	]);
 	
-	// Give it a few seconds to load all the scripts and be ready
-	setTimeout(function() {
-		log("Starting scrape");
-		chrome.tabs.sendMessage(tabId, {
-			action: "start",
-			username: username
-		});
-	}, 5000);
+	timeout = setTimeout(searchFailure, 10000);
 }
 
 chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponse) {
-		db.tweet.add(request).catch(function (error) {
-			log(error);
-		});
+		if (request.action == "add") {
+			clearTimeout(timeout);
+			timeout = setTimeout(searchFailure, 10000);
+			
+			db.tweet.add(request.data).catch(function (error) {
+				console.log(error);
+			});
+		}
 });
+
+function searchFailure() {
+	log("Tab crashed or failed, restarting");
+	newSearch();
+}
 
 function stop(e) {
 	$("#start").show();
 	$("#stop").hide();
+	
 	log("Stopping");
+	clearTimeout(timeout);
 	chrome.tabs.sendMessage(tabId, {
 		action: "stop"
 	});
