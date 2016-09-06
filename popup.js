@@ -1,8 +1,10 @@
 var username, db;
 var windowId, tabId;
 var timeout, count;
+var stop = false;
 
 function start(e) {	
+	stop = false;
 	$("#start").hide();
 	$("#stop").show();
 
@@ -14,23 +16,25 @@ function start(e) {
 }
 
 function newSearch() {
-	db.tweet
-		.orderBy("date")
-		.limit(1)
-		.toArray()
-		.then(function(tweet) {
-			if (tweet[0]) {
-				var date = new Date(tweet[0].date);
-				log("Found existing data, latest date " + isoDate(date));
-				date.setDate(date.getDate() + 1)
-				launchSearch(date);
-			} else {
-				var date = new Date();
-				date.setDate(date.getDate() + 1)
-				launchSearch(date);
-			}
-		})
-		.catch(function() {});
+	if (!stop) {
+		db.tweet
+			.orderBy("date")
+			.limit(1)
+			.toArray()
+			.then(function(tweet) {
+				if (tweet[0]) {
+					var date = new Date(tweet[0].date);
+					log("Found existing data, latest date " + isoDate(date));
+					date.setDate(date.getDate() + 1)
+					launchSearch(date);
+				} else {
+					var date = new Date();
+					date.setDate(date.getDate() + 1)
+					launchSearch(date);
+				}
+			})
+			.catch(function() {});
+	}
 }
 
 function launchSearch(lastDate) {
@@ -94,6 +98,7 @@ function searchFailure() {
 }
 
 function stop(e) {
+	stop = true;
 	$("#start").show();
 	$("#stop").hide();
 	
@@ -106,6 +111,20 @@ function stop(e) {
 	windowId = "";
 }
 
+function downloadDb() {
+	username = $("#username").val().toLowerCase();
+	db = createDb(username);
+	log("Exporting data as JSON");
+	db.tweet
+		.toArray(function(data) {
+			var blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+			$("#downloadAnchor").attr("href", URL.createObjectURL(blob));
+			$("#downloadAnchor").attr("download", username + ".json");
+			$("#downloadAnchor")[0].click();
+			log(data.length + " rows exported");
+		});
+}
+
 function deleteDb() {
 	username = $("#username").val().toLowerCase();
 	Dexie.delete(username);
@@ -116,6 +135,7 @@ $(document).ready(function() {
 	$("#start").click(start);
 	$("#stop").click(stop);
 	$("#delete").click(deleteDb);
+	$("#download").click(downloadDb);
 	$('#form').submit(function () {
 		return false;
 	});	
