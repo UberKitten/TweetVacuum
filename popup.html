@@ -3,15 +3,22 @@
   <head>
     <title>Tweet Vacuum</title>
     <style>
-      body {
-        font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive;
-        font-size: 100%;
-		min-width: 300px;
-      }
-	  
-	  #stop {
-		display: none;
-	  }
+		* {
+			font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive;
+		}
+
+		#page {
+			padding: 15px 15px 15px 15px;
+		}
+
+		#stop {
+			display: none;
+		}
+		
+		#about {
+			float: right;
+			text-align: center;
+		}
     </style>
 	<script src="jquery-3.1.0.js"></script>
 	<script src="dexie.js"></script>
@@ -19,15 +26,24 @@
 	<script src="popup.js"></script>
   </head>
   <body>
-	<form id="form">
-		<label for="username">Username:</label> <input type="text" id="username" /><br />
-		<p id="log">
-			<span id="endlog"></span>
-		</p>
-		<button id="start">Start</button>
-		<button id="stop">Stop</button>
-		<br />
-		<button id="delete">Delete database for user</button>
-	</form>
+	<div id="page">
+		<form id="form">
+			<div id="about">
+				<img src="logo_128.png" /><br />
+				<h2>TweetVacuum</h2>
+				<a href="https://github.com/T3hUb3rK1tten/TweetVacuum">Github</a><br />
+				By <a href="https://mwe.st/">Astra West</a>
+			</div>
+			<label for="username">Username:</label> <input type="text" id="username" />
+			<button id="start">Start</button>
+			<button id="stop">Stop</button><br />
+			<p id="log">
+				<span id="endlog"></span>
+			</p>
+			<br />
+			<button id="delete">Delete database for user</button> <button id="download">Download database for user</button>
+			<a id="downloadAnchor"></a>
+		</form>
+	</div>
   </body>
 </html>
