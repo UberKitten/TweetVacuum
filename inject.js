@@ -54,5 +54,6 @@ chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.action == "stop") {
 		window.close();
+		location.href = "about:blank";
 	}
   });
