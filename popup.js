@@ -1,10 +1,10 @@
 var username, db;
 var windowId, tabId;
 var timeout, count;
-var stop = false;
+var dostop = false;
 
 function start(e) {	
-	stop = false;
+	dostop = false;
 	$("#start").hide();
 	$("#stop").show();
 
@@ -16,7 +16,7 @@ function start(e) {
 }
 
 function newSearch() {
-	if (!stop) {
+	if (!dostop) {
 		db.tweet
 			.orderBy("date")
 			.limit(1)
@@ -98,7 +98,7 @@ function searchFailure() {
 }
 
 function stop(e) {
-	stop = true;
+	dostop = true;
 	$("#start").show();
 	$("#stop").hide();
 	
