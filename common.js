@@ -3,7 +3,7 @@
 function createDb(username) {
 	db = new Dexie(username);
 	db.version(1).stores({
-		tweet: 'tweetId, date'
+		tweet: 'tweetId, date, text'
 	});
 	db.open();
 	return db;

@@ -10,7 +10,8 @@ function loop() {
 					action: "add",
 					data: {
 						tweetId: item.attr("data-item-id"),
-						date: parseInt(item.find(".js-short-timestamp").attr("data-time-ms"))
+						date: parseInt(item.find(".js-short-timestamp").attr("data-time-ms")),
+						text: item.find(".js-tweet-text").text()
 					}
 				});
 				item.attr("vacuumed", true);
